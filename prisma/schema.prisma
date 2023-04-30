@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// generator erd {
+//   provider = "prisma-erd-generator"
+// }
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  password   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Empresa {
+  id         Int        @id @default(autoincrement())
+  cnpj       String     @unique
+  empresa    String     @unique
+  created_at DateTime    @default(now()) 
+  updated_at DateTime   @updatedAt
+  cadastros  Cadastro[]
+
+  @@map("empresas")
+}
+
+model Transporte {
+  id             Int      @id @default(autoincrement())
+  placa          String?  
+  tipo_tranporte String?
+  modelo         String?
+  cadastro_id    Int
+  cadastros      Cadastro @relation(fields: [cadastro_id], references: [id])
+
+  @@index([cadastro_id])
+  @@map("transporte")
+}
+
+model Cadastro {
+  id         Int          @id @default(autoincrement())
+  nome       String
+  matricula  String?
+  cpf        String       @unique
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  empresa_id Int
+  empresa    Empresa      @relation(fields: [empresa_id], references: [id])
+  registros  Registro[]
+  transporte Transporte[]
+
+  @@index([empresa_id])
+  @@map("cadastros")
+}
+
+model Registro {
+  id            String   @id @default(uuid())
+  hora_entrada  String?
+  hora_saida    String?
+  data_registro String    
+  observacao    String
+  status        Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  cadastro_id   Int
+  cadastros     Cadastro @relation(fields: [cadastro_id], references: [id])
+
+  @@index([cadastro_id])
+  @@map("registros")
+}
